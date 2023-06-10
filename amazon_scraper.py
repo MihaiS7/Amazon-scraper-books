@@ -127,13 +127,17 @@ class AmazonProductScraper:
             return False
     
     def extract_formats(self):
-        format_block = self.driver.find_elements(*BookLocators.FORMATS_LINKS)
+        format_block = self.driver.find_elements(*BookLocators.FORMATS_LINKS2)
+        text = "javascript:void(0)"
+        #print([f.text for f in format_block])
         formats = {}
         for format_ in format_block:
-            title = format_.find_element(*FormatLocators.TITLE).text
+            title = format_.find_element(*FormatLocators.TITLE).get_attribute('innerText')
             link = format_.get_attribute("href")
+            link = self.driver.current_url if link.count(text) else link
             formats[title] = link
             
+        input(formats)
         return formats
 
     def navigate_formats(self):
