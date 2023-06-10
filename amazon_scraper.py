@@ -30,7 +30,8 @@ class AmazonProductScraper:
 
         url = "https://www.amazon.es/"
         driver_path = "chromedriver"
-        self. driver = webdriver.Chrome(service=Service(driver_path), options=opt)
+        #self. driver = webdriver.Chrome(service=Service(driver_path), options=opt)
+        self. driver = webdriver.Chrome(options=opt)
         # Website URL
         self.driver.get(url)
         WebDriverWait(self.driver, 20).until(
@@ -120,10 +121,10 @@ class AmazonProductScraper:
 
     def isLocator(locator, attribute):
         try: 
-            element = self.driver.find_element(*locator).get_attribute(attribute)
+            element = self._find_element(locator, attribute)
             return True
         except Exception as error:
-            element = ""
+            #element = ""
             return False
     
     def extract_formats(self):
@@ -137,8 +138,15 @@ class AmazonProductScraper:
             link = self.driver.current_url if link.count(text) else link
             formats[title] = link
             
-        input(formats)
+        #input(formats)
         return formats
+
+    def _find_element(self, locator, attribute):
+        try:
+            text = self.driver.find_element(*locator).get_attribute(attribute)
+        except Exception as error:
+            text = ""
+        return text
 
     def navigate_formats(self):
         #format_links = self.find_elements(BookLocators.FORMATS_LINKS, "href")
@@ -147,18 +155,24 @@ class AmazonProductScraper:
         print(f'format_links: {format_links}')
         ##print(f'num_formats: {len(format_links)}')
         ##original_window = self.driver.current_window_handle
-        #for name, link in format_links.items():
+        for name, link in format_links.items():
         #    print("inside for format_links")
         #    print("-" * 100)
         #    #print(f'opening_newtab')
         #    #self.driver.switch_to.new_window('tab')
-        #    self.driver.get(link)
-        #    print(f'go to  url: {link}')
-        #    print(f'go to link: {name}')
+            print(f'go to  url: {link}')
+            print(f'go to link: {name}')
+            self.driver.get(link)
+            time.sleep(3)
         #    #print("---->element")
-        #    #element = self.driver.find_element(*FormatLocators.CHECK_LIST).get_attribute(attribute)
-        #    #print(element)
-        #    #print(f'islocator: {self.isLocator(FormatLocators.CHECK_LIST)}')
+            #element = self.driver.find_element(*FormatLocators.CHECK_LIST)
+            #element = self._find_element(FormatLocators.CHECK_LIST, "innerText")
+            element = self.find_elements(FormatLocators.LIST_VALUES, "innerText")
+            table = self.find_elements(FormatLocators.LIST_VALUES, "innerText")
+            #element = element.get_attribute("innerText")
+            print(f'element: {element}')
+            #is_locator = self.isLocator(FormatLocators.CHECK_LIST, "innerText")
+            #print(f'islocator: {is_locator}')
         #    #if self.driver.find_element(*FormatLocators.TEST_UL).get_attribute("innerText"):
         #    ###if self.isLocator(FormatLocators.CHECK_LIST, "innerText"):
         #    ###    print(self.driver.find_elements(*FormatLocators.LIST_VALUES).get_attribute("innerText"))

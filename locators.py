@@ -34,7 +34,7 @@ class FormatLocators():
     TEST_KEYS = (By.XPATH, '//div[contains(@id,"productdetails")]//tbody//tr/th/span')
     TEST_UL = (By.XPATH, '//*[@id="detailBullets_feature_div"]/ul/li')
     TABLE_KEY = (By.XPATH, './th')
-    TABLE_value = (By.XPATH, './td')
+    TABLE_VALUE = (By.XPATH, './td')
     CHECK_LIST = (By.XPATH, '//*[@id="detailBullets_feature_div"]/ul')
     CHECK_TABLE = (By.XPATH, '//div[contains(@id,"productdetails")]//tbody')
     TITLE = (By.XPATH, './span[1]')
