@@ -79,11 +79,16 @@ class AmazonProductScraper:
             time.sleep(0.2)
             try:
                 book = self.extract_book_data()
-                self.navigate_formats()
+                descriptions = self.navigate_formats()
+                book = book + descriptions
             except Exception as error:
                 pass
             print(book)
             books.append(book)
+            #print(books)
+            input("pause")
+            return books
+            #break
             #break
         self.driver.close()
         return books
@@ -105,7 +110,7 @@ class AmazonProductScraper:
         return text
 
     def extract_book_data(self): 
-        return (
+        return [
                 self.find_element(BookLocators.TITLE),
                 self.find_element(BookLocators.AUTHOR),
                 self.find_element(BookLocators.PRICE),
@@ -117,7 +122,7 @@ class AmazonProductScraper:
                 self.find_element(BookLocators.LANGUAGE),
                 self.find_element(BookLocators.DIMENTIONS),
                 " ".join(self.find_elements(BookLocators.FORMATS,"innerText")),
-                )
+                ]
 
     def isLocator(locator, attribute):
         try: 
@@ -158,11 +163,10 @@ class AmazonProductScraper:
         ##original_window = self.driver.current_window_handle
         if format_links:
             for name, link in format_links.items():
-            #    #self.driver.switch_to.new_window('tab')
                 print(f'format_name: {name}')
                 print(f'go to  url: {link}')
                 self.driver.get(link)
-                time.sleep(3)
+                time.sleep(2)
             #   # #print("---->element")
                 ##element = self.driver.find_element(*FormatLocators.CHECK_LIST)
                 ##element = self._find_element(FormatLocators.CHECK_LIST, "innerText")
@@ -175,26 +179,7 @@ class AmazonProductScraper:
                 description_list = []
                 description_table = []
                 print(descriptions)
-                #if description_text:
-                #    descriptions += description_text 
-                ##element = element.get_attribute("innerText")
-                #print(f'element: {element}')
-                ##is_locator = self.isLocator(FormatLocators.CHECK_LIST, "innerText")
-                ##print(f'islocator: {is_locator}')
-            #   # #if self.driver.find_element(*FormatLocators.TEST_UL).get_attribute("innerText"):
-            #   # ###if self.isLocator(FormatLocators.CHECK_LIST, "innerText"):
-            #   # ###    print(self.driver.find_elements(*FormatLocators.LIST_VALUES).get_attribute("innerText"))
-            #   # ###    print("if checklist_ul")
-            #   # ###elif self.isLocator(FormatLocators.CHECK_TABLE, "innerText" ):
-            #   # ####elif self.driver.find_element(*FormatLocators.TEST_KEYS).get_attribute("innerText"):
-            #   # ###    print(self.driver.find_element(*FormatLocators.TEST_KEYS).get_attribute("innerText"))
-            #   # ###    print("if_checklist_table")
-            #   #     
-            #   # #input(print("test keys"))
-            #   # #self.driver.close()
-            #   # #self.driver.switch_to.window(original_window)
-            #   # print("-" * 100)
-            #print(f'descriptions: {descriptions}')
+        return descriptions
 
 
    
