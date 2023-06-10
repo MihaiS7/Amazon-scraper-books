@@ -166,8 +166,15 @@ class AmazonProductScraper:
             #   # #print("---->element")
                 ##element = self.driver.find_element(*FormatLocators.CHECK_LIST)
                 ##element = self._find_element(FormatLocators.CHECK_LIST, "innerText")
-                description_text = self.find_elements(FormatLocators.LIST_VALUES, "innerText")
-                print(description_text)
+                description_list = self.find_elements(FormatLocators.LIST_VALUES, "innerText")
+                description_table = self.find_elements(FormatLocators.TABLE_VALUE, "innerText")
+                if description_list:
+                    descriptions += description_list
+                elif description_table:
+                    descrioptions += description_table
+                description_list = []
+                description_table = []
+                print(descriptions)
                 #if description_text:
                 #    descriptions += description_text 
                 ##element = element.get_attribute("innerText")
