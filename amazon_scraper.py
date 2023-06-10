@@ -149,43 +149,45 @@ class AmazonProductScraper:
         return text
 
     def navigate_formats(self):
+        descriptions = []
         #format_links = self.find_elements(BookLocators.FORMATS_LINKS, "href")
         #format_links = [self.find_elements(BookLocators.FORMATS_LINKS, "href")]
         format_links = self.extract_formats() 
-        print(f'format_links: {format_links}')
+        #print(f'format_links: {format_links}')
         ##print(f'num_formats: {len(format_links)}')
         ##original_window = self.driver.current_window_handle
-        for name, link in format_links.items():
-        #    print("inside for format_links")
-        #    print("-" * 100)
-        #    #print(f'opening_newtab')
-        #    #self.driver.switch_to.new_window('tab')
-            print(f'go to  url: {link}')
-            print(f'go to link: {name}')
-            self.driver.get(link)
-            time.sleep(3)
-        #    #print("---->element")
-            #element = self.driver.find_element(*FormatLocators.CHECK_LIST)
-            #element = self._find_element(FormatLocators.CHECK_LIST, "innerText")
-            element = self.find_elements(FormatLocators.LIST_VALUES, "innerText")
-            table = self.find_elements(FormatLocators.LIST_VALUES, "innerText")
-            #element = element.get_attribute("innerText")
-            print(f'element: {element}')
-            #is_locator = self.isLocator(FormatLocators.CHECK_LIST, "innerText")
-            #print(f'islocator: {is_locator}')
-        #    #if self.driver.find_element(*FormatLocators.TEST_UL).get_attribute("innerText"):
-        #    ###if self.isLocator(FormatLocators.CHECK_LIST, "innerText"):
-        #    ###    print(self.driver.find_elements(*FormatLocators.LIST_VALUES).get_attribute("innerText"))
-        #    ###    print("if checklist_ul")
-        #    ###elif self.isLocator(FormatLocators.CHECK_TABLE, "innerText" ):
-        #    ####elif self.driver.find_element(*FormatLocators.TEST_KEYS).get_attribute("innerText"):
-        #    ###    print(self.driver.find_element(*FormatLocators.TEST_KEYS).get_attribute("innerText"))
-        #    ###    print("if_checklist_table")
-        #        
-        #    #input(print("test keys"))
-        #    #self.driver.close()
-        #    #self.driver.switch_to.window(original_window)
-        #    print("-" * 100)
+        if format_links:
+            for name, link in format_links.items():
+            #    #self.driver.switch_to.new_window('tab')
+                print(f'format_name: {name}')
+                print(f'go to  url: {link}')
+                self.driver.get(link)
+                time.sleep(3)
+            #   # #print("---->element")
+                ##element = self.driver.find_element(*FormatLocators.CHECK_LIST)
+                ##element = self._find_element(FormatLocators.CHECK_LIST, "innerText")
+                description_text = self.find_elements(FormatLocators.LIST_VALUES, "innerText")
+                print(description_text)
+                #if description_text:
+                #    descriptions += description_text 
+                ##element = element.get_attribute("innerText")
+                #print(f'element: {element}')
+                ##is_locator = self.isLocator(FormatLocators.CHECK_LIST, "innerText")
+                ##print(f'islocator: {is_locator}')
+            #   # #if self.driver.find_element(*FormatLocators.TEST_UL).get_attribute("innerText"):
+            #   # ###if self.isLocator(FormatLocators.CHECK_LIST, "innerText"):
+            #   # ###    print(self.driver.find_elements(*FormatLocators.LIST_VALUES).get_attribute("innerText"))
+            #   # ###    print("if checklist_ul")
+            #   # ###elif self.isLocator(FormatLocators.CHECK_TABLE, "innerText" ):
+            #   # ####elif self.driver.find_element(*FormatLocators.TEST_KEYS).get_attribute("innerText"):
+            #   # ###    print(self.driver.find_element(*FormatLocators.TEST_KEYS).get_attribute("innerText"))
+            #   # ###    print("if_checklist_table")
+            #   #     
+            #   # #input(print("test keys"))
+            #   # #self.driver.close()
+            #   # #self.driver.switch_to.window(original_window)
+            #   # print("-" * 100)
+            #print(f'descriptions: {descriptions}')
 
 
    
