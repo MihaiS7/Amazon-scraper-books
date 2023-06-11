@@ -2,8 +2,10 @@ import time
 from collections import defaultdict
 from itertools import chain, cycle
 from collections import defaultdict
+from collections import defaultdict
 from datetime import date
 import csv
+from pprint import pprint
 from pprint import pprint
 from pprint import pprint
 from bs4 import BeautifulSoup
@@ -44,6 +46,8 @@ class AmazonProductScraper:
 
         # Opening chrome
         self.driver = webdriver.Chrome(options=opt)
+        self. driver = webdriver.Chrome(service=Service(driver_path), options=opt)
+        # Website URL
         self.driver.get(url)
         WebDriverWait(self.driver, 20).until(
             EC.presence_of_element_located((By.NAME, 'accept'))
@@ -72,6 +76,8 @@ class AmazonProductScraper:
         books = []
         for num, url in enumerate(urls, 1):
             print(f'num_url: {num} ')
+        for num, url in enumerate(urls, 1):
+            print(f'num_url: {num} ')
             self.driver.get(url)
             time.sleep(0.5)
             try:
@@ -88,16 +94,27 @@ class AmazonProductScraper:
             book = (book, descriptions)
             #except Exception as error:
              #   pass
+            time.sleep(0.2)
+            #try:
+            book = self.extract_book_data()
+            descriptions = self.navigate_formats()
+            book = (book, descriptions)
+            #except Exception as error:
+             #   pass
             books.append(book)
             #print(books)
             # input("pause")
             # return books
             # break
             # break
+            print(books)
             input("pause")
             return books
             print(books)
             if num == 10:
+                break
+            #return books
+            if num == 2:
                 break
             #return books
             #break
@@ -190,6 +207,38 @@ class AmazonProductScraper:
         input("end order, press to continue")
         
 
+    def _str_clean(str_, *replacers):
+        for replacer in replacers:
+            str_ = str_.replace(replacer, "")
+        return str_ 
+        
+
+    def _explode(lines, sep, piece_sep):
+        elements = {}
+        for piece in lines.split(sep): 
+            #str_ = self._str_clean(piece, ["\u200f", "\u200e"])
+            #input(f'piece: {piece}')
+            key, value = piece.split(piece_sep)
+            elements[key] = value
+        return elements
+    
+    def order(self, books):
+        """analize the formats and give order to blank values"""
+        ordered_formats = defaultdict(lambda : defaultdict(list))
+        
+        #input(print(f"quantity of books: {len(books)}"))
+        
+        for book, formats in books:
+            input(print(book[0]))
+            for f_title, f_value in formats.items():
+                #ordered_formats[f_title] = defaultdict(list)
+                #ordered_formats[f_title]
+                for detail_title, detail_value in f_value.items():
+                    ordered_formats[f_title][detail_title].append(detail_value)
+        pprint(ordered_formats)
+        input("end order, press to continue")
+        
+
     
     def order(self, books):
         """analize the formats and give order to blank values"""
@@ -235,12 +284,42 @@ class AmazonProductScraper:
 
     def navigate_formats(self):
         descriptions = []
+        descriptions = {}
         format_links = self.extract_formats() 
         if format_links:
             for name, link in format_links.items():
                 print(f'format_name: {name}')
                 print(f'go to  url: {link}')
                 self.driver.get(link)
+                time.sleep(1)
+                #list_keys = self._explode(self.find_elements(FormatLocators.TEST_UL, "innerText"), ",", ":")
+                ##list_keys = self.find_elements(FormatLocators.TEST_UL, "innerText")
+                list_keys = [title.text.replace(":", "").strip() for title in self.driver.find_elements(*FormatLocators.DETAIL_LIST_TITLES)] 
+                list_values = [values.text.strip() for values in self.driver.find_elements(*FormatLocators.DETAIL_LIST_VALUES)] 
+                #input(keys)
+                #list_keys - self._explode(list_keys, ",", ":")
+                #table_keys = self._explode(self.find_elements(FormatLocators.TEST_KEYS, "innerText"), ",", ":")
+                #list_keys = self.find_elements(FormatLocators.TEST_UL, "innerText")
+                table_keys = self.find_elements(FormatLocators.TEST_KEYS, "innerText")
+                #list_values = self.find_elements(FormatLocators.LIST_VALUES, "innerText")
+                #table_values = self.find_elements(FormatLocators.TABLE_VALUES, "innerText")
+                #print(len(list_keys), len(list_values), len(table_keys), len(table_values))
+                if list_keys:
+                    print("list_keys")
+                #    #descriptions += description_list_value
+                    descriptions[name] = dict(zip(list_keys, list_values))                    
+                    print(list_values)
+                    #print(list_values)
+                elif table_keys:
+                    print("list_table")
+                #    #descrioptions += description_table_keys
+                    #descriptions[name] = dict(zip(table_keys, table_values))                    
+                    print(table_keys)
+                #list_keys = []
+                #table_keys = []
+                #list_values = []
+                #table_values = []
+                #print(descriptions)
                 time.sleep(1)
                 #list_keys = self._explode(self.find_elements(FormatLocators.TEST_UL, "innerText"), ",", ":")
                 ##list_keys = self.find_elements(FormatLocators.TEST_UL, "innerText")
@@ -331,6 +410,15 @@ if __name__ == "__main__":
     my_amazon_bot.driver.close()
     for category_url in my_amazon_bot.get_category_url():
         books = my_amazon_bot.navigating_books([category_url])
+    category_details = my_amazon_bot.get_category_url()
+
+    #my_amazon_bot.extract_product_information(my_amazon_bot.extract_webpage_information())
+
+    navigation = my_amazon_bot.navigate_pages(category_details)
+    
+    books = my_amazon_bot.navigating_books(navigation)
+    my_amazon_bot.order(books)
+    input("pause2000")
     my_amazon_bot.product_information_spreadsheet(books)
          
     my_amazon_bot.driver.close()
