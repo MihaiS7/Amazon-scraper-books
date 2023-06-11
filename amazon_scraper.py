@@ -34,9 +34,8 @@ class AmazonProductScraper:
         url = "https://www.amazon.es/"
         driver_path = "chromedriver"
         #self. driver = webdriver.Chrome(service=Service(driver_path), options=opt)
-
-        # Opening chrome
-        self.driver = webdriver.Chrome(options=opt)
+        self. driver = webdriver.Chrome(options=opt)
+        # Website URL
         self.driver.get(url)
         WebDriverWait(self.driver, 20).until(
             EC.presence_of_element_located((By.NAME, 'accept'))
@@ -55,15 +54,14 @@ class AmazonProductScraper:
 
     def extract_webpage_information(self):
         books_links = [book.get_attribute("href") for book in self.driver.find_elements(*MainLocators.BOOKS)]
-    
-        #input(print(f'books:{books_links}'))
         return books_links
     
     def navigating_books(self, urls):
         books = []
-        for url in urls:
+        for num, url in enumerate(urls, 1):
+            print(f'num_url: {num} ')
             self.driver.get(url)
-            time.sleep(0.5)
+            time.sleep(0.2)
             try:
                 book = self.extract_book_data()
                 descriptions = self.navigate_formats()
@@ -73,10 +71,11 @@ class AmazonProductScraper:
             print(book)
             books.append(book)
             #print(books)
-            # input("pause")
-            # return books
-            # break
-            # break
+            input("pause")
+            return books
+            #break
+            #break
+        self.driver.close()
         return books
 
     def find_element(self, locator):
@@ -108,13 +107,6 @@ class AmazonProductScraper:
                 " ".join(self.find_elements(BookLocators.FORMATS,"innerText")),
                 ]
 
-    def isLocator(locator, attribute):
-        try: 
-            element = self._find_element(locator, attribute)
-            return True
-        except Exception as error:
-            #element = ""
-            return False
     
     def extract_formats(self):
         # Extract available book formats
@@ -172,6 +164,8 @@ class AmazonProductScraper:
 
     def navigate_formats(self):
         descriptions = []
+        #format_links = self.find_elements(BookLocators.FORMATS_LINKS, "href")
+        #format_links = [self.find_elements(BookLocators.FORMATS_LINKS, "href")]
         format_links = self.extract_formats() 
         if format_links:
             for name, link in format_links.items():
@@ -179,12 +173,15 @@ class AmazonProductScraper:
                 print(f'go to  url: {link}')
                 self.driver.get(link)
                 time.sleep(2)
+            #   # #print("---->element")
+                ##element = self.driver.find_element(*FormatLocators.CHECK_LIST)
+                ##element = self._find_element(FormatLocators.CHECK_LIST, "innerText")
                 description_list = self.find_elements(FormatLocators.LIST_VALUES, "innerText")
                 description_table = self.find_elements(FormatLocators.TABLE_VALUE, "innerText")
                 if description_list:
                     descriptions += description_list
                 elif description_table:
-                    descriptions += description_table
+                    descrioptions += description_table
                 description_list = []
                 description_table = []
                 print(descriptions)
@@ -246,6 +243,8 @@ if __name__ == "__main__":
     navigation = my_amazon_bot.navigate_pages(category_details)
     
     books = my_amazon_bot.navigating_books(navigation)
+    my_amazon_bot.order(books)
+    input("pause2000")
     my_amazon_bot.product_information_spreadsheet(books)
     
 
