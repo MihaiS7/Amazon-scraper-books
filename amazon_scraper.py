@@ -416,6 +416,7 @@ if __name__ == "__main__":
         my_amazon_bot.product_information_spreadsheet(books)
         
     my_amazon_bot.driver.close()
+<<<<<<< HEAD
     for category_url in my_amazon_bot.get_category_url():
         books = my_amazon_bot.navigating_books([category_url])
     category_details = my_amazon_bot.get_category_url()
@@ -430,3 +431,7 @@ if __name__ == "__main__":
     my_amazon_bot.product_information_spreadsheet(books)
          
     my_amazon_bot.driver.close()
+=======
+
+# Test
+>>>>>>> 58097b5 (NEW MIHAI)
