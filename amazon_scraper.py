@@ -1,6 +1,8 @@
 import time
+from collections import defaultdict
 from datetime import date
 import csv
+from pprint import pprint
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import subprocess, sys
@@ -11,6 +13,8 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support import expected_conditions as EC
 from locators import MainLocators, BookLocators, FormatLocators
+import os
+import pandas as pd
 
 
 class AmazonProductScraper:
@@ -20,9 +24,8 @@ class AmazonProductScraper:
         self.formatted_category_name = None
 
     def open_browser(self):
-
+        # Setting browser
         opt = Options()
-
         opt.add_argument("--disable-infobars")
         opt.add_argument("--disable-extensions")
         opt.add_argument('--log-level=OFF')
@@ -31,8 +34,9 @@ class AmazonProductScraper:
         url = "https://www.amazon.es/"
         driver_path = "chromedriver"
         #self. driver = webdriver.Chrome(service=Service(driver_path), options=opt)
-        self. driver = webdriver.Chrome(options=opt)
-        # Website URL
+
+        # Opening chrome
+        self.driver = webdriver.Chrome(options=opt)
         self.driver.get(url)
         WebDriverWait(self.driver, 20).until(
             EC.presence_of_element_located((By.NAME, 'accept'))
@@ -40,33 +44,16 @@ class AmazonProductScraper:
         accept_button = self.driver.find_element(By.NAME, 'accept')
         accept_button.click()
 
-
-        # Wait till the page has been loaded
         time.sleep(3)
 
     def get_category_url(self):
+        data = pd.read_csv("input.csv")
 
-        self.category_name = input("\n>> Enter the product/category to be searched: ")
-
-        self.formatted_category_name = self.category_name.replace(" ", "+")
-
-        # This is the product url format for all products
-        category_url = "https://www.amazon.es/s?k={}&ref=nb_sb_noss"
-
-        category_url = category_url.format(self.formatted_category_name)
-
-        print(">> Category URL: ", category_url)
-
-        # Go to the product webpage
-        self.driver.get(category_url)
-        # To be used later while navigating to different pages
-        return category_url
+        for url in data["url"]:
+            self.driver.get(url)
+            yield url
 
     def extract_webpage_information(self):
-        # Parsing through the webpage
-        #soup = BeautifulSoup(self.driver.page_source, 'html.parser')
-        # List of all the html information related to the product
-        #page_results = soup.find_all('div', {'data-component-type': 's-search-result'})
         books_links = [book.get_attribute("href") for book in self.driver.find_elements(*MainLocators.BOOKS)]
     
         #input(print(f'books:{books_links}'))
@@ -76,7 +63,7 @@ class AmazonProductScraper:
         books = []
         for url in urls:
             self.driver.get(url)
-            time.sleep(0.2)
+            time.sleep(0.5)
             try:
                 book = self.extract_book_data()
                 descriptions = self.navigate_formats()
@@ -86,11 +73,10 @@ class AmazonProductScraper:
             print(book)
             books.append(book)
             #print(books)
-            input("pause")
-            return books
-            #break
-            #break
-        self.driver.close()
+            # input("pause")
+            # return books
+            # break
+            # break
         return books
 
     def find_element(self, locator):
@@ -102,11 +88,9 @@ class AmazonProductScraper:
 
     def find_elements(self, locator, attribute):
         try:
-            #text = "".join([tag.get_attribute('innerText') for tag in self.driver.find_elements(*locator)])
             text = [tag.get_attribute(attribute) for tag in self.driver.find_elements(*locator)]
         except Exception as error:
             text = ""
-        #input(print(f'text: {text}'))
         return text
 
     def extract_book_data(self): 
@@ -133,6 +117,7 @@ class AmazonProductScraper:
             return False
     
     def extract_formats(self):
+        # Extract available book formats
         format_block = self.driver.find_elements(*BookLocators.FORMATS_LINKS2)
         text = "javascript:void(0)"
         #print([f.text for f in format_block])
@@ -153,29 +138,53 @@ class AmazonProductScraper:
             text = ""
         return text
 
+    def _str_clean(str_, *replacers):
+        for replacer in replacers:
+            str_ = str_.replace(replacer, "")
+        return str_ 
+        
+
+    def _explode(lines, sep, piece_sep):
+        elements = {}
+        for piece in lines.split(sep): 
+            #str_ = self._str_clean(piece, ["\u200f", "\u200e"])
+            #input(f'piece: {piece}')
+            key, value = piece.split(piece_sep)
+            elements[key] = value
+        return elements
+    
+    def order(self, books):
+        """analize the formats and give order to blank values"""
+        ordered_formats = defaultdict(lambda : defaultdict(list))
+        
+        #input(print(f"quantity of books: {len(books)}"))
+        
+        for book, formats in books:
+            input(print(book[0]))
+            for f_title, f_value in formats.items():
+                #ordered_formats[f_title] = defaultdict(list)
+                #ordered_formats[f_title]
+                for detail_title, detail_value in f_value.items():
+                    ordered_formats[f_title][detail_title].append(detail_value)
+        pprint(ordered_formats)
+        input("end order, press to continue")
+        
+
     def navigate_formats(self):
         descriptions = []
-        #format_links = self.find_elements(BookLocators.FORMATS_LINKS, "href")
-        #format_links = [self.find_elements(BookLocators.FORMATS_LINKS, "href")]
         format_links = self.extract_formats() 
-        #print(f'format_links: {format_links}')
-        ##print(f'num_formats: {len(format_links)}')
-        ##original_window = self.driver.current_window_handle
         if format_links:
             for name, link in format_links.items():
                 print(f'format_name: {name}')
                 print(f'go to  url: {link}')
                 self.driver.get(link)
                 time.sleep(2)
-            #   # #print("---->element")
-                ##element = self.driver.find_element(*FormatLocators.CHECK_LIST)
-                ##element = self._find_element(FormatLocators.CHECK_LIST, "innerText")
                 description_list = self.find_elements(FormatLocators.LIST_VALUES, "innerText")
                 description_table = self.find_elements(FormatLocators.TABLE_VALUE, "innerText")
                 if description_list:
                     descriptions += description_list
                 elif description_table:
-                    descrioptions += description_table
+                    descriptions += description_table
                 description_list = []
                 description_table = []
                 print(descriptions)
@@ -187,7 +196,6 @@ class AmazonProductScraper:
         # Contains the list of all the product's information
         book_links = []
         try:
-    
             max_number_of_pages = "//span[@class='s-pagination-item s-pagination-disabled']"
     
             number_of_pages = self.driver.find_element(By.XPATH, max_number_of_pages)
@@ -201,14 +209,7 @@ class AmazonProductScraper:
             next_page_url = category_url + "&page=" + str(i)
             self.driver.get(next_page_url)
             book_links += self.extract_webpage_information()
-    
-            extraction_information = ">> Page {} - webpage information extracted"
-            #$print(extraction_information.format(i))
             break
-    
-    
-    
-    
         return book_links
 
     def product_information_spreadsheet(self, records):
@@ -218,9 +219,9 @@ class AmazonProductScraper:
 
         for _ in records:
             file_name = "{}_{}.csv".format(self.category_name, today)
-            f = open(file_name, "w", newline='', encoding='utf-8')
+            f = open(file_name, "a", newline='', encoding='utf-8')
             writer = csv.writer(f)
-            writer.writerow(['Title', 'Author', 'Price', 'Category1', 'Category 2', 'Rating', 'Review Count', 'Product URL', 'Language', 'Dimensions', 'Formats'])
+            writer.writerow(['Title', 'Author', 'Price', 'Category1', 'Category 2', 'Rating', 'Review Count', 'Product URL', 'Language', 'Dimensions', 'Formats', 'ASIN', 'Editorial', 'Idioma', 'Tamaño del archivo', 'Texto a voz', 'Lector de pantalla', 'Tipografía mejorada', 'Word Wise', 'Notas adhesiva', 'Longitud de impresión', ])
             writer.writerows(records)
             f.close()
 
@@ -234,18 +235,10 @@ class AmazonProductScraper:
 
 if __name__ == "__main__":
     my_amazon_bot = AmazonProductScraper()
-
     my_amazon_bot.open_browser()
 
-    category_details = my_amazon_bot.get_category_url()
-
-    #my_amazon_bot.extract_product_information(my_amazon_bot.extract_webpage_information())
-
-    navigation = my_amazon_bot.navigate_pages(category_details)
-    
-    books = my_amazon_bot.navigating_books(navigation)
-    my_amazon_bot.product_information_spreadsheet(books)
-    
-
-    print(navigation)
-    #my_amazon_bot.product_information_spreadsheet(navigation)
+    for category_url in my_amazon_bot.get_category_url():
+        books = my_amazon_bot.navigating_books([category_url])
+        my_amazon_bot.product_information_spreadsheet(books)
+        
+    my_amazon_bot.driver.close()
