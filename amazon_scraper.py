@@ -283,3 +283,11 @@ if __name__ == "__main__":
 
     print(navigation)
     #my_amazon_bot.product_information_spreadsheet(navigation)
+
+    for category_url in my_amazon_bot.get_category_url():
+        books = my_amazon_bot.navigating_books([category_url])
+        my_amazon_bot.product_information_spreadsheet(books)
+        
+    my_amazon_bot.driver.close()
+
+# Test
