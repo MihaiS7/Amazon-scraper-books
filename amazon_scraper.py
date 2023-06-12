@@ -74,6 +74,10 @@ class AmazonProductScraper:
             #print(books)
             input("pause")
             return books
+            print(books)
+            if num == 10:
+                break
+            #return books
             #break
             #break
         self.driver.close()
@@ -206,7 +210,8 @@ class AmazonProductScraper:
                 elif table_keys:
                     print("list_table")
                 #    #descrioptions += description_table_keys
-                    #descriptions[name] = dict(zip(table_keys, table_values))                    
+                    descriptions[name] = dict(zip(table_keys, table_values))                    
+                    format_fields[name].update(list_keys)
                     print(table_keys)
                 #list_keys = []
                 #table_keys = []
