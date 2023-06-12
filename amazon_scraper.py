@@ -1,5 +1,6 @@
 import time
 from collections import defaultdict
+from itertools import chain, cycle
 from datetime import date
 import csv
 from pprint import pprint
@@ -14,6 +15,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support import expected_conditions as EC
 from locators import MainLocators, BookLocators, FormatLocators
 
+format_fields = defaultdict(set)
 
 class AmazonProductScraper:
     def __init__(self):
@@ -73,17 +75,12 @@ class AmazonProductScraper:
             print(f'num_url: {num} ')
             self.driver.get(url)
             time.sleep(0.2)
-            #try:
             book = self.extract_book_data()
             descriptions = self.navigate_formats()
             book = (book, descriptions)
-            #except Exception as error:
-             #   pass
             books.append(book)
-            #print(books)
             print(books)
-            input("pause")
-            if num == 2:
+            if num == 5:
                 break
             #return books
             #break
@@ -100,11 +97,9 @@ class AmazonProductScraper:
 
     def find_elements(self, locator, attribute):
         try:
-            #text = "".join([tag.get_attribute('innerText') for tag in self.driver.find_elements(*locator)])
             text = [tag.get_attribute(attribute) for tag in self.driver.find_elements(*locator)]
         except Exception as error:
             text = ""
-        #input(print(f'text: {text}'))
         return text
 
     def extract_book_data(self): 
@@ -119,7 +114,7 @@ class AmazonProductScraper:
                 self.driver.current_url ,
                 self.find_element(BookLocators.LANGUAGE),
                 self.find_element(BookLocators.DIMENTIONS),
-                " ".join(self.find_elements(BookLocators.FORMATS,"innerText")),
+                #" ".join(self.find_elements(BookLocators.FORMATS,"innerText")),
                 ]
 
     
@@ -144,36 +139,47 @@ class AmazonProductScraper:
             text = ""
         return text
 
-    def _str_clean(str_, *replacers):
-        for replacer in replacers:
-            str_ = str_.replace(replacer, "")
-        return str_ 
-        
-
-    def _explode(lines, sep, piece_sep):
-        elements = {}
-        for piece in lines.split(sep): 
-            #str_ = self._str_clean(piece, ["\u200f", "\u200e"])
-            #input(f'piece: {piece}')
-            key, value = piece.split(piece_sep)
-            elements[key] = value
-        return elements
     
     def order(self, books):
         """analize the formats and give order to blank values"""
+        print(format_fields)
+        ##input("show format_fields")
         ordered_formats = defaultdict(lambda : defaultdict(list))
+        books_ = [] 
         
         #input(print(f"quantity of books: {len(books)}"))
         
         for book, formats in books:
-            input(print(book[0]))
-            for f_title, f_value in formats.items():
+            ##input(print(book[0]))
+            formats_to_fill  = list(zip(set(format_fields.keys()).difference(set(formats.keys())), cycle([''])))
+            print(formats_to_fill)
+            ##input("not_present_formats")
+            for f_title, f_value in chain(formats.items(), formats_to_fill):
                 #ordered_formats[f_title] = defaultdict(list)
                 #ordered_formats[f_title]
-                for detail_title, detail_value in f_value.items():
+                if not f_value:
+                    f_value = {}
+                values_to_fill  = list(zip(format_fields[f_title].difference(set(f_value.keys())), cycle([''])))
+                ##print(values_to_fill)
+                ##input("values_to_fill")
+                for detail_title, detail_value in chain(f_value.items(), values_to_fill):
                     ordered_formats[f_title][detail_title].append(detail_value)
-        pprint(ordered_formats)
-        input("end order, press to continue")
+                    #book.append(detail_value)
+            books_.append(book)
+        all_values = [] 
+        for values in ordered_formats.values():
+            for list_values in values.values():
+                all_values.append(list_values)
+        
+        ordered_formats = list(zip(*all_values))
+        final_list = []
+        for index in range(len(ordered_formats)):
+            final_list.append(books_[index] + list(ordered_formats[index]))
+            
+
+        print(final_list)
+        input("final_list")
+        return final_list
         
 
     def navigate_formats(self):
@@ -185,33 +191,27 @@ class AmazonProductScraper:
                 print(f'go to  url: {link}')
                 self.driver.get(link)
                 time.sleep(1)
-                #list_keys = self._explode(self.find_elements(FormatLocators.TEST_UL, "innerText"), ",", ":")
-                ##list_keys = self.find_elements(FormatLocators.TEST_UL, "innerText")
                 list_keys = [title.text.replace(":", "").strip() for title in self.driver.find_elements(*FormatLocators.DETAIL_LIST_TITLES)] 
                 list_values = [values.text.strip() for values in self.driver.find_elements(*FormatLocators.DETAIL_LIST_VALUES)] 
-                #input(keys)
-                #list_keys - self._explode(list_keys, ",", ":")
-                #table_keys = self._explode(self.find_elements(FormatLocators.TEST_KEYS, "innerText"), ",", ":")
-                #list_keys = self.find_elements(FormatLocators.TEST_UL, "innerText")
-                table_keys = self.find_elements(FormatLocators.TEST_KEYS, "innerText")
-                #list_values = self.find_elements(FormatLocators.LIST_VALUES, "innerText")
-                #table_values = self.find_elements(FormatLocators.TABLE_VALUES, "innerText")
-                #print(len(list_keys), len(list_values), len(table_keys), len(table_values))
+                table_keys = [title.text for title in self.driver.find_elements(*FormatLocators.TEST_KEYS)]
+                table_values = [values.text for values in self.driver.find_elements(*FormatLocators.TEST_VALUES)]
                 if list_keys:
                     print("list_keys")
                 #    #descriptions += description_list_value
                     descriptions[name] = dict(zip(list_keys, list_values))                    
                     print(list_values)
+                    format_fields[name].update(list_keys)
                     #print(list_values)
                 elif table_keys:
                     print("list_table")
                 #    #descrioptions += description_table_keys
-                    #descriptions[name] = dict(zip(table_keys, table_values))                    
+                    descriptions[name] = dict(zip(table_keys, table_values))                    
+                    format_fields[name].update(list_keys)
                     print(table_keys)
-                #list_keys = []
-                #table_keys = []
-                #list_values = []
-                #table_values = []
+                list_keys = []
+                table_keys = []
+                list_values = []
+                table_values = []
                 #print(descriptions)
         return descriptions
 
@@ -278,7 +278,7 @@ if __name__ == "__main__":
     navigation = my_amazon_bot.navigate_pages(category_details)
     
     books = my_amazon_bot.navigating_books(navigation)
-    my_amazon_bot.order(books)
+    books = my_amazon_bot.order(books)
     input("pause2000")
     my_amazon_bot.product_information_spreadsheet(books)
     
