@@ -114,6 +114,7 @@ class AmazonProductScraper:
             #return books
             if num == 2:
             if num == 5:
+            if num == 10:
                 break
             #return books
             #break
@@ -326,7 +327,7 @@ class AmazonProductScraper:
                     print("list_table")
                 #    #descrioptions += description_table_keys
                     descriptions[name] = dict(zip(table_keys, table_values))                    
-                    format_fields[name].update(list_keys)
+                    format_fields[name].update(table_keys)
                     print(table_keys)
                 list_keys = []
                 table_keys = []
