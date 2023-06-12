@@ -1,8 +1,10 @@
 import time
 from collections import defaultdict
 from itertools import chain, cycle
+from collections import defaultdict
 from datetime import date
 import csv
+from pprint import pprint
 from pprint import pprint
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -16,6 +18,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from locators import MainLocators, BookLocators, FormatLocators
 import os
 import pandas as pd
+import os
+import pandas as pd
 
 format_fields = defaultdict(set)
 
@@ -27,6 +31,7 @@ class AmazonProductScraper:
 
     def open_browser(self):
         # Setting browser
+        # Setting browser
         opt = Options()
         opt.add_argument("--disable-infobars")
         opt.add_argument("--disable-extensions")
@@ -36,8 +41,9 @@ class AmazonProductScraper:
         url = "https://www.amazon.es/"
         driver_path = "chromedriver"
         #self. driver = webdriver.Chrome(service=Service(driver_path), options=opt)
-        self. driver = webdriver.Chrome(options=opt)
-        # Website URL
+
+        # Opening chrome
+        self.driver = webdriver.Chrome(options=opt)
         self.driver.get(url)
         WebDriverWait(self.driver, 20).until(
             EC.presence_of_element_located((By.NAME, 'accept'))
@@ -49,7 +55,11 @@ class AmazonProductScraper:
 
     def get_category_url(self):
         data = pd.read_csv("input.csv")
+        data = pd.read_csv("input.csv")
 
+        for url in data["url"]:
+            self.driver.get(url)
+            yield url
         for url in data["url"]:
             self.driver.get(url)
             yield url
@@ -63,6 +73,14 @@ class AmazonProductScraper:
         for num, url in enumerate(urls, 1):
             print(f'num_url: {num} ')
             self.driver.get(url)
+            time.sleep(0.5)
+            try:
+                book = self.extract_book_data()
+                descriptions = self.navigate_formats()
+                book = book + descriptions
+            except Exception as error:
+                pass
+            print(book)
             time.sleep(0.2)
             #try:
             book = self.extract_book_data()
@@ -72,6 +90,10 @@ class AmazonProductScraper:
              #   pass
             books.append(book)
             #print(books)
+            # input("pause")
+            # return books
+            # break
+            # break
             input("pause")
             return books
             print(books)
@@ -115,6 +137,7 @@ class AmazonProductScraper:
     
     def extract_formats(self):
         # Extract available book formats
+        # Extract available book formats
         format_block = self.driver.find_elements(*BookLocators.FORMATS_LINKS2)
         text = "javascript:void(0)"
         #print([f.text for f in format_block])
@@ -134,6 +157,38 @@ class AmazonProductScraper:
         except Exception as error:
             text = ""
         return text
+
+    def _str_clean(str_, *replacers):
+        for replacer in replacers:
+            str_ = str_.replace(replacer, "")
+        return str_ 
+        
+
+    def _explode(lines, sep, piece_sep):
+        elements = {}
+        for piece in lines.split(sep): 
+            #str_ = self._str_clean(piece, ["\u200f", "\u200e"])
+            #input(f'piece: {piece}')
+            key, value = piece.split(piece_sep)
+            elements[key] = value
+        return elements
+    
+    def order(self, books):
+        """analize the formats and give order to blank values"""
+        ordered_formats = defaultdict(lambda : defaultdict(list))
+        
+        #input(print(f"quantity of books: {len(books)}"))
+        
+        for book, formats in books:
+            input(print(book[0]))
+            for f_title, f_value in formats.items():
+                #ordered_formats[f_title] = defaultdict(list)
+                #ordered_formats[f_title]
+                for detail_title, detail_value in f_value.items():
+                    ordered_formats[f_title][detail_title].append(detail_value)
+        pprint(ordered_formats)
+        input("end order, press to continue")
+        
 
     
     def order(self, books):
@@ -180,8 +235,6 @@ class AmazonProductScraper:
 
     def navigate_formats(self):
         descriptions = []
-        #format_links = self.find_elements(BookLocators.FORMATS_LINKS, "href")
-        #format_links = [self.find_elements(BookLocators.FORMATS_LINKS, "href")]
         format_links = self.extract_formats() 
         if format_links:
             for name, link in format_links.items():
@@ -218,6 +271,16 @@ class AmazonProductScraper:
                 #list_values = []
                 #table_values = []
                 #print(descriptions)
+                time.sleep(2)
+                description_list = self.find_elements(FormatLocators.LIST_VALUES, "innerText")
+                description_table = self.find_elements(FormatLocators.TABLE_VALUE, "innerText")
+                if description_list:
+                    descriptions += description_list
+                elif description_table:
+                    descriptions += description_table
+                description_list = []
+                description_table = []
+                print(descriptions)
         return descriptions
 
 
@@ -261,6 +324,11 @@ if __name__ == "__main__":
     my_amazon_bot = AmazonProductScraper()
     my_amazon_bot.open_browser()
 
+    for category_url in my_amazon_bot.get_category_url():
+        books = my_amazon_bot.navigating_books([category_url])
+        my_amazon_bot.product_information_spreadsheet(books)
+        
+    my_amazon_bot.driver.close()
     for category_url in my_amazon_bot.get_category_url():
         books = my_amazon_bot.navigating_books([category_url])
     my_amazon_bot.product_information_spreadsheet(books)
