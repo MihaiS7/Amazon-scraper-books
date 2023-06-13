@@ -226,7 +226,6 @@ class AmazonProductScraper:
         # Contains the list of all the product's information
         book_links = []
         try:
-    
             max_number_of_pages = "//span[@class='s-pagination-item s-pagination-disabled']"
     
             number_of_pages = self.driver.find_element(By.XPATH, max_number_of_pages)
@@ -240,14 +239,7 @@ class AmazonProductScraper:
             next_page_url = category_url + "&page=" + str(i)
             self.driver.get(next_page_url)
             book_links += self.extract_webpage_information()
-    
-            extraction_information = ">> Page {} - webpage information extracted"
-            #$print(extraction_information.format(i))
             break
-    
-    
-    
-    
         return book_links
 
     def product_information_spreadsheet(self, records):
@@ -257,9 +249,9 @@ class AmazonProductScraper:
 
         for _ in records:
             file_name = "{}_{}.csv".format(self.category_name, today)
-            f = open(file_name, "w", newline='', encoding='utf-8')
+            f = open(file_name, "a", newline='', encoding='utf-8')
             writer = csv.writer(f)
-            writer.writerow(['Title', 'Author', 'Price', 'Category1', 'Category 2', 'Rating', 'Review Count', 'Product URL', 'Language', 'Dimensions', 'Formats'])
+            writer.writerow(['Title', 'Author', 'Price', 'Category1', 'Category 2', 'Rating', 'Review Count', 'Product URL', 'Language', 'Dimensions', 'Formats', 'ASIN', 'Editorial', 'Idioma', 'Tamaño del archivo', 'Texto a voz', 'Lector de pantalla', 'Tipografía mejorada', 'Word Wise', 'Notas adhesiva', 'Longitud de impresión', ])
             writer.writerows(records)
         print(f">> Information about the products is stored in {file_name}\n")
         opener = "open" if sys.platform == "darwin" else "xdg-open"
@@ -269,25 +261,8 @@ if __name__ == "__main__":
     my_amazon_bot = AmazonProductScraper()
     my_amazon_bot.open_browser()
 
-    category_details = my_amazon_bot.get_category_url()
-
-    #my_amazon_bot.extract_product_information(my_amazon_bot.extract_webpage_information())
-
-    navigation = my_amazon_bot.navigate_pages(category_details)
-    
-    books = my_amazon_bot.navigating_books(navigation)
-    books = my_amazon_bot.order(books)
-    input("pause2000")
-    my_amazon_bot.product_information_spreadsheet(books)
-    
-
-    print(navigation)
-    #my_amazon_bot.product_information_spreadsheet(navigation)
-
     for category_url in my_amazon_bot.get_category_url():
         books = my_amazon_bot.navigating_books([category_url])
     my_amazon_bot.product_information_spreadsheet(books)
-        
+         
     my_amazon_bot.driver.close()
-
-# Test
