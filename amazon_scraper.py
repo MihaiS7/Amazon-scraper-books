@@ -118,6 +118,7 @@ class AmazonProductScraper:
     
     def extract_formats(self):
         # Extract available book formats
+        # Extract available book formats
         format_block = self.driver.find_elements(*BookLocators.FORMATS_LINKS2)
         text = "javascript:void(0)"
         #print([f.text for f in format_block])
