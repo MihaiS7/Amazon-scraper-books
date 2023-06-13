@@ -413,7 +413,7 @@ if __name__ == "__main__":
 
     for category_url in my_amazon_bot.get_category_url():
         books = my_amazon_bot.navigating_books([category_url])
-        my_amazon_bot.product_information_spreadsheet(books)
+    my_amazon_bot.product_information_spreadsheet(books)
         
     my_amazon_bot.driver.close()
 <<<<<<< HEAD
@@ -421,6 +421,7 @@ if __name__ == "__main__":
         books = my_amazon_bot.navigating_books([category_url])
     category_details = my_amazon_bot.get_category_url()
 
+<<<<<<< HEAD
     #my_amazon_bot.extract_product_information(my_amazon_bot.extract_webpage_information())
 
     navigation = my_amazon_bot.navigate_pages(category_details)
@@ -435,3 +436,6 @@ if __name__ == "__main__":
 
 # Test
 >>>>>>> 58097b5 (NEW MIHAI)
+=======
+# Test
+>>>>>>> bc8f96f (repair loop spreadsheet)
