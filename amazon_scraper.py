@@ -195,7 +195,7 @@ class AmazonProductScraper:
 
         print("\n>> Creating an excel sheet and entering the details...")
         today = date.today().strftime("%d-%m-%Y")
-        file_name = f"{today}.csv".format(self.category_name, today)
+        file_name = f"Amazon Scraper {today}.csv".format(self.category_name, today)
         
         with open(file_name, "w", newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
@@ -214,9 +214,12 @@ class AmazonProductScraper:
 if __name__ == "__main__":
     my_amazon_bot = AmazonProductScraper()
     my_amazon_bot.open_browser()
-    
+
+    all_books = []
     for category_url in my_amazon_bot.get_category_url():
         books = my_amazon_bot.navigating_books([category_url])
-        my_amazon_bot.product_information_spreadsheet(books)
+        all_books.extend(books)
          
+    my_amazon_bot.product_information_spreadsheet(all_books)
     my_amazon_bot.driver.close()
+
