@@ -14,7 +14,7 @@ class BookLocators():
     LANGUAGE =(By.XPATH, '//div[@id="detailBullets_feature_div"]/ul/li[2]/span[@class="a-list-item"]/span[last()]')
     DIMENTIONS =(By.XPATH, '//div[@id="detailBullets_feature_div"]/ul/li[last()]/span[@class="a-list-item"]/span[last()]')
     FORMATS = (By.XPATH, '//div[@id="tmmSwatches"]//ul//li//span[@class="a-button-inner"]/a/span')
-    FORMATS_BLOCK = (By.XPATH, '//div[@id="tmmSwatches"]//ul//li//span[@class="a-button-inner"]/a')
+    FORMATS_BLOCK = (By.XPATH, '//div[@id="tmmSwatches"]//ul//li//span[@class="a-button-inner"]//a')
     FORMATS_LINKS = (By.XPATH, '//div[@id="tmmSwatches"]//ul//li//span[@class="a-button-inner"]/a/span[1]')
     FORMATS_LINKS2 = (By.XPATH, '//div[@id="tmmSwatches"]//ul//li//span[@class="a-button-inner"]/a')
     PUBLICATION = (By.XPATH, '//*[@id="rpi-attribute-book_details-publication_date"]/div[3]')
@@ -27,6 +27,8 @@ class BookLocators():
     PAPER_BOOK = (By.XPATH, '//*[@id="a-autoid-5-announce"]')
 
 class FormatLocators():
+    TITLE = (By.XPATH, './/br/preceding-sibling::span')
+    PRICE = (By.XPATH, './/br//preceding-sibling::span/../span[2]')
     DETAIL_TABLE = (By.XPATH, '//div[contains(@id,"productdetails")]//tbody//tr/')
     TEST_KEYS = (By.XPATH, '//div[contains(@id,"productdetails")]//tbody//tr/th/span')
     TEST_UL = (By.XPATH, '//*[@id="detailBullets_feature_div"]/ul/li')
@@ -34,6 +36,5 @@ class FormatLocators():
     #TABLE_VALUE = (By.XPATH, './td')
     CHECK_LIST = (By.XPATH, '//*[@id="detailBullets_feature_div"]/ul')
     CHECK_TABLE = (By.XPATH, '//div[contains(@id,"productdetails")]//tbody')
-    TITLE = (By.XPATH, './span[1]')
     LIST_VALUES = (By.XPATH, '//div[@id="detailBullets_feature_div"]/ul/li/span/span[2]') 
     TABLE_VALUE = (By.XPATH, '//div[contains(@id,"productdetails")]//tbody//tr/td')  

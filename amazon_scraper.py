@@ -23,6 +23,7 @@ class AmazonProductScraper:
         self.category_name = None
         self.formatted_category_name = None
         self.book_data = {}
+        self.price_keys = set()
 
     def open_browser(self):
         # Setting browser
@@ -75,11 +76,25 @@ class AmazonProductScraper:
             text = ""
         return text
 
+    def _format_prices(self):
+        formats = {}
+        for format_ in self.driver.find_elements(*BookLocators.FORMATS_BLOCK):
+            title = format_.find_element(*FormatLocators.TITLE).get_attribute("innerText").strip()
+            price = format_.find_element(*FormatLocators.PRICE).get_attribute("innerText").strip()
+            formats[f'Price_{title}'] = price
+            #titles = [title.find_element(*FormatLocators.TITLE).get_attribute("innerText") for title in self.driver.find_elements(*BookLocators.FORMATS_BLOCK)]
+            #price = [price.find_element(*FormatLocators.PRICE).get_attribute("innerText") for price in self.driver.find_elements(*BookLocators.FORMATS_BLOCK)]
+        self.price_keys.update(formats.keys())
+        return formats
+
     def extract_book_data(self): 
         self.book_data = {
                 'Title': self.find_element(BookLocators.TITLE),
                 'Author': self.find_element(BookLocators.AUTHOR),
-                'Price': self.find_element(BookLocators.PRICE),
+                #'Price': self.find_element(BookLocators.PRICE),
+                #'Price': ",".join([price.find_element(*FormatLocators.PRICE).get_attribute("innerText") for price in self.driver.find_elements(*BookLocators.FORMATS_BLOCK)]),
+                #'Titles': ",".join([title.find_element(*FormatLocators.TITLE).get_attribute("innerText") for title in self.driver.find_elements(*BookLocators.FORMATS_BLOCK)]),
+                **self._format_prices(),
                 'Category 1': self.find_element(BookLocators.CATEGORY_1),
                 'Category 2': self.find_element(BookLocators.CATEGORY_2),
                 'Rating': self.find_element(BookLocators.RATING),
@@ -260,24 +275,25 @@ class AmazonProductScraper:
         for url in urls:
             self.driver.get(url)
             time.sleep(0.5)
-            try:
-                book = self.extract_book_data()
-                print(f"Book data: {book}")
-                descriptions = self.navigate_formats()
-                book.update(descriptions)
-            except Exception as error:
-                print(f"An error occurred: {error}")
-                pass
-            if book:
-                books.append(book)
+            #try:
+            book = self.extract_book_data()
+            print(f"Book data: {book}")
+            descriptions = self.navigate_formats()
+            book.update(descriptions)
+            #except Exception as error:
+                #print(f"An error occurred: {error}")
+                #pass
+            #if book:
+            books.append(book)
         return books
     
-    def product_information_spreadsheet(self, book_data):
+    def product_information_spreadsheet(self, book_data, prices_keys):
 
         print("\n>> Creating an excel sheet and entering the details...")
-        keys = book_data[0].keys()
+        keys = [key for key in self.book_data.keys() if key not in prices_keys]
+        field_names = keys[:2] + list(price_keys) + keys[2:]
         with open('books.csv', 'w', newline='', encoding='utf-8') as output_file:
-            dict_writer = csv.DictWriter(output_file, keys)
+            dict_writer = csv.DictWriter(output_file, field_names)
             dict_writer.writeheader()
             dict_writer.writerows(book_data)
             print("Data written to CSV file. ")
@@ -291,6 +307,7 @@ if __name__ == "__main__":
         books = my_amazon_bot.navigating_books([category_url])
         print(f"Books: {books}")
         all_books.extend(books)
+    price_keys = my_amazon_bot.price_keys
          
-    my_amazon_bot.product_information_spreadsheet(all_books)
+    my_amazon_bot.product_information_spreadsheet(all_books, price_keys)
     my_amazon_bot.driver.close()
