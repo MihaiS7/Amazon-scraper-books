@@ -38,3 +38,7 @@ class FormatLocators():
     CHECK_TABLE = (By.XPATH, '//div[contains(@id,"productdetails")]//tbody')
     LIST_VALUES = (By.XPATH, '//div[@id="detailBullets_feature_div"]/ul/li/span/span[2]') 
     TABLE_VALUE = (By.XPATH, '//div[contains(@id,"productdetails")]//tbody//tr/td')  
+    DETAIL_LIST_TITLES = (By.XPATH, '//*[@id="detailBullets_feature_div"]/ul/li/span/child::span[1]')
+    DETAIL_LIST_VALUES = (By.XPATH, '//*[@id="detailBullets_feature_div"]/ul/li/span/child::span[2]')
+    DETAIL_TABLE_KEYS = (By.XPATH, '//div[contains(@id,"productdetails")]//tbody//tr[position() < last()]/th')
+    DETAIL_TABLE_VALUES = (By.XPATH, '//div[contains(@id,"productdetails")]//tbody//tr[position() < last()]/td')
