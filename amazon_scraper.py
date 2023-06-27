@@ -1,20 +1,14 @@
 import time
-from collections import defaultdict
 from itertools import chain
 from datetime import date
 import csv
-from pprint import pprint
-from bs4 import BeautifulSoup
 from selenium import webdriver
-import subprocess, sys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support import expected_conditions as EC
 from locators import MainLocators, BookLocators, FormatLocators
-import os
 import pandas as pd
 
 
@@ -68,6 +62,7 @@ class AmazonProductScraper:
         try:
             text = self.driver.find_element(*locator).text
         except Exception as error:
+            print(f"There is an error: {error}")
             text = ""
         return text
 
@@ -149,10 +144,6 @@ class AmazonProductScraper:
             print(f"Book data: {book}")
             descriptions = self.navigate_formats()
             book.update(descriptions)
-            #except Exception as error:
-                #print(f"An error occurred: {error}")
-                #pass
-            #if book:
             books.append(book)
         return books
     
