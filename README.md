@@ -23,4 +23,4 @@ Please follow these simple steps:
 
 I really appreciate your interest in the script and welcome any contributions you may wish to make.
 
-Thank you for choosing this amazon-book-scraper.
+Thank you for choosing this amazon-book-scraper!
