@@ -44,7 +44,7 @@ class AmazonProductScraper:
 
         time.sleep(3)
 
-    def get_category_url(self):
+    def get_category_url(self): # using the input file(urls)
         data = pd.read_csv("input.csv")
 
         for url in data["url"]:
