@@ -31,9 +31,7 @@ class AmazonProductScraper:
 
         url = "https://www.amazon.es/"
         driver_path = "chromedriver"
-        #self. driver = webdriver.Chrome(service=Service(driver_path), options=opt)
 
-        # Opening chrome
         self.driver = webdriver.Chrome(options=opt)
         self.driver.get(url)
         WebDriverWait(self.driver, 20).until(
@@ -139,7 +137,7 @@ class AmazonProductScraper:
         for url in urls:
             self.driver.get(url)
             time.sleep(0.5)
-            #try:
+    
             book = self.extract_book_data()
             print(f"Book data: {book}")
             descriptions = self.navigate_formats()
@@ -150,7 +148,7 @@ class AmazonProductScraper:
     def product_information_spreadsheet(self, book_data, prices_keys, format_keys):
 
         print("\n>> Creating an excel sheet and entering the details...")
-        #format_keys = [*set([key for key in chain(*format_keys.values())])]
+
         price_keys_ = [key for key in self.book_data.keys() if key not in chain(prices_keys, format_keys)]
         field_names = price_keys_[:2] + list(price_keys) + price_keys_[2:] + sorted(format_keys)
         with open('books.csv', 'w', newline='', encoding='utf-8') as output_file:
