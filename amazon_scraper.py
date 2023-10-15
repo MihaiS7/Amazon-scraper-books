@@ -22,7 +22,7 @@ class AmazonProductScraper:
         self.format_keys = set()
 
     def open_browser(self):
-        # Setting browser
+        # Setting the browser
         opt = Options()
         opt.add_argument("--disable-infobars")
         opt.add_argument("--disable-extensions")
