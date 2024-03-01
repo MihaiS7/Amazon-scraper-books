@@ -1,4 +1,4 @@
-# **Amazon YouTube Books 📚: Your Ultimate Book Scraper**
+# **Amazon Books 📚: Your Ultimate Book Scraper**
 
 Welcome to the specialized book scraper script you searched for! 
 This script is specifically designed to seamlessly handle book data, ensuring the extraction of every information from the book formats.
